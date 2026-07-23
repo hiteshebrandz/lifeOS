@@ -2,9 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, maximum-scale=1">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LifeOS">
+<meta name="theme-color" content="#0A0C10">
 <title>LifeOS — Phase 1</title>
-<link rel="icon" href="data:,">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon.svg">
+<link rel="apple-touch-icon" href="./icon.svg">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
@@ -84,6 +91,8 @@
       radial-gradient(circle at 0% 100%, rgba(255,255,255,.08) 0%, transparent 45%);
       pointer-events:none;
   }
+  .app-shell{ min-height:100dvh; display:flex; flex-direction:column; position:relative; width:100%; max-width:480px; margin:0 auto; overflow:hidden; }
+  .app-shell::before{ content:""; position:fixed; inset:0; background:linear-gradient(135deg, rgba(124,108,255,.14), transparent 45%, rgba(255,107,107,.08)); pointer-events:none; }
   @keyframes splashPop{ 0%{ transform:scale(.5); opacity:0; } 60%{ transform:scale(1.08); opacity:1; } 100%{ transform:scale(1); opacity:1; } }
   @keyframes splashPulseRing{ 0%{ box-shadow:0 0 0 0 rgba(124,108,255,.45); } 100%{ box-shadow:0 0 0 22px rgba(124,108,255,0); } }
   @keyframes splashFadeUp{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:translateY(0); } }
@@ -205,6 +214,33 @@ const App = {
     /* ---- Splash / launch animation ---- */
     const showSplash = ref(true);
     const splashLeaving = ref(false);
+    const PIN_CODE = '2222';
+    const isLocked = ref(true);
+    const pinInput = ref('');
+    const pinError = ref('');
+
+    function requestFullscreen(){
+      if(document.fullscreenElement) return;
+      const target = document.documentElement || document.body;
+      if(target?.requestFullscreen) target.requestFullscreen().catch(() => {});
+    }
+
+    function unlockApp(){
+      if(pinInput.value === PIN_CODE){
+        isLocked.value = false;
+        pinError.value = '';
+        pinInput.value = '';
+        requestFullscreen();
+      } else {
+        pinError.value = 'Incorrect PIN. Try 2222.';
+        pinInput.value = '';
+      }
+    }
+
+    function handlePinKeydown(event){
+      if(event.key === 'Enter') unlockApp();
+    }
+
     onMounted(() => {
       setTimeout(() => { splashLeaving.value = true; }, 1300);
       setTimeout(() => { showSplash.value = false; }, 1750);
@@ -505,10 +541,25 @@ const App = {
       finishOnboarding, resetAllData,
       checkinForm, submitCheckin, checkinSaved,
       taskFilter, filteredTasks, priorityColor, fmtDate,
+      PIN_CODE, isLocked, pinInput, pinError, unlockApp, handlePinKeydown, requestFullscreen,
     };
   },
   template: `
-  <div class="max-w-md mx-auto min-h-screen flex flex-col relative" style="background:var(--bg);">
+  <div class="app-shell" style="background:var(--bg);">
+    <div v-if="isLocked" class="absolute inset-0 z-[200] flex items-center justify-center px-5" style="background:radial-gradient(circle at top, rgba(124,108,255,.22), transparent 40%), var(--bg);">
+      <div class="w-full max-w-sm card p-6 text-center">
+        <div class="w-16 h-16 rounded-3xl flex items-center justify-center mx-auto mb-4 btn-primary">
+          <i data-lucide="lock" class="w-8 h-8 text-white"></i>
+        </div>
+        <h1 class="font-display text-2xl font-semibold">LifeOS secured</h1>
+        <p class="text-sm mt-2" style="color:var(--muted);">Enter your PIN to open the app.</p>
+        <input v-model="pinInput" @keyup.enter="unlockApp" @keydown="handlePinKeydown" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="Enter PIN" class="w-full rounded-2xl p-3 mt-5 text-sm text-center tracking-[0.35em] font-semibold" />
+        <button @click="unlockApp" class="w-full btn-primary rounded-2xl py-3 mt-4 font-semibold">Unlock</button>
+        <p v-if="pinError" class="text-sm mt-3" style="color:var(--high);">{{ pinError }}</p>
+      </div>
+    </div>
+
+    <template v-if="!isLocked">
 
     <!-- SPLASH -->
     <div v-if="showSplash" class="fixed inset-0 z-[100] flex flex-col items-center justify-center transition-all duration-500" :style="'background:var(--bg);' + (splashLeaving ? 'opacity:0; transform:scale(1.06);' : 'opacity:1; transform:scale(1);')">
@@ -1098,6 +1149,7 @@ const App = {
     </div>
     </transition>
 
+    </template>
   </div>
   `
 };
