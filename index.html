@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>LifeOS — Phase 1</title>
+<link rel="icon" href="data:,">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0C10;
+    --surface:#12151C;
+    --surface-2:#181C25;
+    --surface-3:#1F2430;
+    --border:#262B37;
+    --text:#E7E9EE;
+    --muted:#8B93A6;
+    --muted-2:#5C6579;
+    --violet:#7C6CFF;
+    --violet-dim:#7C6CFF33;
+    --gold:#F2B84B;
+    --gold-dim:#F2B84B26;
+    --high:#FF6B6B;
+    --med:#FFB86B;
+    --low:#59D68C;
+  }
+  *{ -webkit-tap-highlight-color: transparent; }
+  html,body{ background:var(--bg); color:var(--text); }
+  body{ font-family:'Inter',sans-serif; overscroll-behavior-y:none; background:
+      radial-gradient(circle at 15% 0%, #1a1530 0%, transparent 45%),
+      radial-gradient(circle at 100% 20%, #16241f 0%, transparent 40%),
+      var(--bg);
+      background-attachment:fixed;
+  }
+  .font-display{ font-family:'Space Grotesk',sans-serif; letter-spacing:-.01em; }
+  .safe-top{ padding-top:max(env(safe-area-inset-top),18px); }
+  .safe-bottom{ padding-bottom:max(env(safe-area-inset-bottom),10px); }
+  ::-webkit-scrollbar{ display:none; }
+  * { scrollbar-width:none; }
+  .card{ background:linear-gradient(180deg, var(--surface), var(--surface) 60%, #12151c); border:1px solid var(--border); border-radius:22px; box-shadow:0 1px 0 rgba(255,255,255,.02) inset, 0 12px 24px -16px rgba(0,0,0,.5); }
+  .card-2{ background:var(--surface-2); border:1px solid var(--border); border-radius:18px; transition:border-color .15s ease, transform .15s ease; }
+  .card-2:active{ transform:scale(.99); }
+  .section-title{ font-size:11px; font-weight:700; letter-spacing:.08em; color:var(--muted); text-transform:uppercase; }
+  .chip{ border-radius:999px; font-size:11px; font-weight:600; padding:4px 10px; letter-spacing:.2px; white-space:nowrap; }
+  .btn-primary{ background:linear-gradient(135deg,var(--violet),#5B4BE0); color:white; box-shadow:0 10px 24px -10px rgba(124,108,255,.6); }
+  .btn-primary:active{ transform:scale(.97); }
+  .strike{ text-decoration:line-through; color:var(--muted-2); }
+  .tab-active{ color:var(--violet); }
+  .tab-inactive{ color:var(--muted-2); }
+  .nav-pill{ position:relative; transition:background .2s ease, color .2s ease; }
+  .nav-pill.tab-active{ background:var(--violet-dim); border-radius:16px; }
+  .icon-btn{ width:32px; height:32px; border-radius:10px; display:flex; align-items:center; justify-content:center; background:var(--surface-3); border:1px solid var(--border); transition:background .15s ease, transform .1s ease; }
+  .icon-btn:active{ transform:scale(.92); }
+  .icon-btn-danger{ background:#FF6B6B18; }
+  .icon-btn-danger:active{ background:#FF6B6B33; }
+  .add-btn{ background:var(--violet-dim); border:1px solid #7C6CFF44; color:var(--violet); border-radius:12px; padding:6px 12px; font-size:12px; font-weight:700; display:flex; align-items:center; gap:5px; transition:transform .1s ease; }
+  .add-btn:active{ transform:scale(.95); }
+  .empty-state{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:36px 16px; }
+  .empty-state .icon-wrap{ width:52px; height:52px; border-radius:16px; background:var(--surface-3); display:flex; align-items:center; justify-content:center; margin-bottom:14px; }
+  .fade-enter-active,.fade-leave-active{ transition:opacity .18s ease, transform .18s ease; }
+  .fade-enter-from{ opacity:0; transform:translateY(6px); }
+  .fade-leave-to{ opacity:0; transform:translateY(-4px); }
+  .list-enter-active,.list-leave-active{ transition:opacity .2s ease, transform .2s ease, max-height .25s ease; }
+  .list-enter-from{ opacity:0; transform:translateX(8px); }
+  .list-leave-to{ opacity:0; transform:translateX(-12px) scale(.97); }
+  .modal-enter-active,.modal-leave-active{ transition:opacity .2s ease; }
+  .modal-enter-from,.modal-leave-to{ opacity:0; }
+  .sheet-enter-active,.sheet-leave-active{ transition:transform .28s cubic-bezier(.32,.72,0,1); }
+  .sheet-enter-from,.sheet-leave-to{ transform:translateY(100%); }
+  input[type=range]{ -webkit-appearance:none; height:6px; border-radius:999px; background:var(--surface-3); }
+  input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; width:20px; height:20px; border-radius:50%; background:var(--gold); border:3px solid var(--bg); box-shadow:0 0 0 1px var(--gold); }
+  input, textarea, select{ background:var(--surface-3); border:1px solid var(--border); color:var(--text); }
+  input:focus, textarea:focus, select:focus{ outline:none; border-color:var(--violet); }
+  input::placeholder, textarea::placeholder{ color:var(--muted-2); }
+  .no-scrollbar::-webkit-scrollbar{ display:none; }
+  .ring-track{ stroke:var(--surface-3); }
+  .glow{ box-shadow:0 0 40px -12px var(--violet-dim); }
+  .hero-pattern{ position:absolute; inset:0; opacity:.5; background:
+      radial-gradient(circle at 100% 0%, rgba(255,255,255,.12) 0%, transparent 40%),
+      radial-gradient(circle at 0% 100%, rgba(255,255,255,.08) 0%, transparent 45%);
+      pointer-events:none;
+  }
+  @keyframes splashPop{ 0%{ transform:scale(.5); opacity:0; } 60%{ transform:scale(1.08); opacity:1; } 100%{ transform:scale(1); opacity:1; } }
+  @keyframes splashPulseRing{ 0%{ box-shadow:0 0 0 0 rgba(124,108,255,.45); } 100%{ box-shadow:0 0 0 22px rgba(124,108,255,0); } }
+  @keyframes splashFadeUp{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:translateY(0); } }
+  @keyframes splashDotBounce{ 0%,80%,100%{ transform:scale(.6); opacity:.4; } 40%{ transform:scale(1); opacity:1; } }
+  .splash-logo{ animation:splashPop .6s cubic-bezier(.34,1.56,.64,1) both, splashPulseRing 1.8s ease-out .6s infinite; }
+  .splash-fade-in{ opacity:0; animation:splashFadeUp .5s ease both; }
+  .splash-dot{ width:6px; height:6px; border-radius:999px; background:var(--violet); display:inline-block; animation:splashDotBounce 1.1s ease-in-out infinite; }
+  @keyframes taskCompletePulse{ 0%{ transform:scale(1); } 40%{ transform:scale(1.15); } 100%{ transform:scale(1); } }
+  .complete-pulse{ animation:taskCompletePulse .35s ease; }
+  @media (prefers-reduced-motion: reduce){
+    .splash-logo, .splash-fade-in, .splash-dot, .complete-pulse{ animation:none !important; }
+  }
+</style>
+</head>
+<body class="min-h-screen">
+<div id="app"></div>
+
+<script>
+const { createApp, reactive, ref, computed, watch, onMounted, nextTick, toRefs } = Vue;
+
+/* ---------------- Utility helpers ---------------- */
+const todayStr = () => new Date().toISOString().slice(0,10);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const fmtDate = (d) => { if(!d) return 'No date'; const dt = new Date(d+'T00:00:00'); return dt.toLocaleDateString(undefined,{month:'short',day:'numeric'}); };
+const daysBetween = (a,b) => Math.round((new Date(b) - new Date(a)) / 86400000);
+const PRIORITY_WEIGHT = { High:3, Med:2, Low:1 };
+
+/* ---------------- Seed Data ---------------- */
+function seedData(){
+  const t = todayStr();
+  const idDev = 'id_dev', idCreator = 'id_creator', idAthlete = 'id_athlete';
+  return {
+    onboarded: false,
+    lastActiveDate: t,
+    identities: [
+      { id: idDev, name:'Developer', kind:'current', why:'Building real software is how I create leverage and provide for my future.' },
+      { id: idCreator, name:'Creator', kind:'desired', why:'I want to build an audience and share what I make with the world.' },
+      { id: idAthlete, name:'Athlete', kind:'desired', why:'A strong body keeps my mind sharp and my energy high for everything else.' },
+    ],
+    goals: [
+      { id: uid(), title:'Ship LifeOS v1 to real users', type:'long-term', identityId: idDev, targetDate: '2026-12-01', status:'Active' },
+      { id: uid(), title:'Publish 4 build-in-public posts', type:'monthly', identityId: idCreator, targetDate: '2026-08-01', status:'Active' },
+      { id: uid(), title:'Run a 5k without stopping', type:'monthly', identityId: idAthlete, targetDate: '2026-08-15', status:'Active' },
+    ],
+    tasks: [
+      { id: uid(), title:'Design the recommendation engine logic', dueDate:t, priority:'High', duration:60, goalId:null, identityId: idDev, rollover:0, completed:false, completedAt:null },
+      { id: uid(), title:'Write today\'s build-in-public thread', dueDate:t, priority:'Med', duration:30, goalId:null, identityId: idCreator, rollover:1, completed:false, completedAt:null },
+      { id: uid(), title:'Stretch + mobility routine', dueDate:t, priority:'Low', duration:15, goalId:null, identityId: idAthlete, rollover:0, completed:false, completedAt:null },
+      { id: uid(), title:'Reply to onboarding feedback emails', dueDate:t, priority:'Med', duration:20, goalId:null, identityId: idDev, rollover:0, completed:true, completedAt:t },
+    ],
+    habits: [
+      { id: uid(), title:'Read for 20 minutes', frequency:'daily', identityId: idCreator, streak:4, bestStreak:9, completedDates:[] },
+      { id: uid(), title:'Morning workout', frequency:'daily', identityId: idAthlete, streak:2, bestStreak:14, completedDates:[] },
+      { id: uid(), title:'Code for 1 focused hour', frequency:'daily', identityId: idDev, streak:6, bestStreak:6, completedDates:[] },
+    ],
+    checkins: {},
+    oneThing: { date: t, taskId: null },
+    history: {},
+  };
+}
+
+/* ---------------- Persistence ---------------- */
+const STORAGE_KEY = 'lifeos_phase1_state_v1';
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return seedData();
+    const parsed = JSON.parse(raw);
+    if(!parsed || !parsed.identities) return seedData();
+    return parsed;
+  }catch(e){ return seedData(); }
+}
+function persist(state){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+}
+
+/* ---------------- App ---------------- */
+const App = {
+  setup(){
+    const state = reactive(loadState());
+
+    /* ---- Day rollover handling ---- */
+    function runDailyRollover(){
+      const t = todayStr();
+      if(state.lastActiveDate !== t){
+        state.tasks.forEach(task => {
+          if(!task.completed && task.dueDate && task.dueDate < t){
+            task.rollover = (task.rollover||0) + 1;
+            task.dueDate = t;
+          }
+        });
+        if(state.oneThing.date !== t){ state.oneThing = { date:t, taskId:null }; }
+        state.lastActiveDate = t;
+      }
+    }
+    runDailyRollover();
+
+    watch(state, () => persist(state), { deep:true });
+
+    /* ---- Navigation ---- */
+    const PRIMARY_TABS = [
+      { key:'dashboard', label:'Home', icon:'layout-dashboard' },
+      { key:'tasks', label:'Tasks', icon:'list-checks' },
+      { key:'habits', label:'Habits', icon:'flame' },
+      { key:'checkin', label:'Check-In', icon:'moon-star' },
+    ];
+    const MORE_TABS = [
+      { key:'goals', label:'Goals', icon:'target', desc:'Long-term & monthly targets' },
+      { key:'identity', label:'Identity', icon:'user-round', desc:'Who you\'re becoming' },
+      { key:'analytics', label:'Stats', icon:'bar-chart-3', desc:'Your trends & momentum' },
+    ];
+    const ALL_TABS = [...PRIMARY_TABS, ...MORE_TABS];
+    const activeTab = ref(state.onboarded ? 'dashboard' : 'identity');
+    const showOnboarding = ref(!state.onboarded);
+    const showMoreSheet = ref(false);
+    const isMoreTabActive = computed(() => MORE_TABS.some(m => m.key === activeTab.value));
+    function selectTab(key){ activeTab.value = key; showMoreSheet.value = false; }
+
+    /* ---- Splash / launch animation ---- */
+    const showSplash = ref(true);
+    const splashLeaving = ref(false);
+    onMounted(() => {
+      setTimeout(() => { splashLeaving.value = true; }, 1300);
+      setTimeout(() => { showSplash.value = false; }, 1750);
+    });
+
+    /* ---- Motivational copy engine ---- */
+    const MOTIVATION_HIGH = [
+      "You're on fire today — keep the momentum going! 🔥",
+      "This is what winning days look like. Don't stop now.",
+      "Incredible energy today. Future you says thank you.",
+      "You're proving who you are, one action at a time.",
+    ];
+    const MOTIVATION_MID = [
+      "Solid progress. One more win and today's a great day.",
+      "You're closer than you think — keep pushing.",
+      "Momentum is building. Stay in motion.",
+      "Good things are happening. Let's add one more.",
+    ];
+    const MOTIVATION_LOW = [
+      "Every legend started with a single action. Start now.",
+      "Small steps today build the identity you want tomorrow.",
+      "You don't need a perfect day — just a next step.",
+      "Today is wide open. Go make it count.",
+    ];
+    const motivationLine = computed(() => {
+      const pool = lifeScoreForMotivation() >= 70 ? MOTIVATION_HIGH : lifeScoreForMotivation() >= 35 ? MOTIVATION_MID : MOTIVATION_LOW;
+      const dayIndex = new Date().getDate();
+      return pool[dayIndex % pool.length];
+    });
+    function lifeScoreForMotivation(){ return typeof lifeScore !== 'undefined' && lifeScore.value !== undefined ? lifeScore.value : 0; }
+
+    /* ---- Derived: today's data ---- */
+    const t = computed(() => todayStr());
+    const todaysTasks = computed(() => state.tasks.filter(x => x.dueDate === t.value));
+    const todaysTasksIncomplete = computed(() => todaysTasks.value.filter(x => !x.completed));
+    const identityById = (id) => state.identities.find(i => i.id === id);
+
+    /* ---- Recommendation Engine ---- */
+    const recommendation = computed(() => {
+      const pool = todaysTasksIncomplete.value;
+      if(pool.length === 0) return null;
+      const oneThingTask = pool.find(x => x.id === state.oneThing.taskId);
+      if(oneThingTask) return { task: oneThingTask, reason:'This is Today\'s One Thing — your single most important move.' };
+      const sorted = [...pool].sort((a,b) => {
+        const p = PRIORITY_WEIGHT[b.priority] - PRIORITY_WEIGHT[a.priority];
+        if(p !== 0) return p;
+        const r = (b.rollover||0) - (a.rollover||0);
+        if(r !== 0) return r;
+        return new Date(a.dueDate) - new Date(b.dueDate);
+      });
+      const top = sorted[0];
+      let reason = 'Highest priority task on your list right now.';
+      if(top.rollover >= 2) reason = `You've delayed this ${top.rollover} times — momentum starts by finally doing it.`;
+      else if(top.priority === 'High') reason = 'Marked High priority — tackle it while your energy is fresh.';
+      return { task: top, reason };
+    });
+
+    /* ---- Life Score Engine ---- */
+    const taskCompletionPct = computed(() => {
+      const list = todaysTasks.value;
+      if(list.length === 0) return 100;
+      return Math.round((list.filter(x=>x.completed).length / list.length) * 100);
+    });
+    const habitsScheduledToday = computed(() => state.habits);
+    const habitCompletionPct = computed(() => {
+      const list = habitsScheduledToday.value;
+      if(list.length === 0) return 100;
+      const done = list.filter(h => h.completedDates.includes(t.value)).length;
+      return Math.round((done/list.length)*100);
+    });
+    const oneThingCompletionPct = computed(() => {
+      if(!state.oneThing.taskId) return 0;
+      const task = state.tasks.find(x => x.id === state.oneThing.taskId);
+      return task && task.completed ? 100 : 0;
+    });
+    const checkinCompletedPct = computed(() => state.checkins[t.value] ? 100 : 0);
+    const lifeScore = computed(() => {
+      return Math.round(
+        taskCompletionPct.value * 0.4 +
+        habitCompletionPct.value * 0.3 +
+        oneThingCompletionPct.value * 0.2 +
+        checkinCompletedPct.value * 0.1
+      );
+    });
+
+    // Snapshot today's score into history for analytics trend
+    watch(lifeScore, () => {
+      state.history[t.value] = {
+        score: lifeScore.value,
+        task: taskCompletionPct.value,
+        habit: habitCompletionPct.value,
+        oneThing: oneThingCompletionPct.value,
+        checkin: checkinCompletedPct.value,
+      };
+    }, { immediate:true });
+
+    const identityDistribution = computed(() => {
+      const counts = {};
+      state.identities.forEach(i => counts[i.id] = 0);
+      todaysTasks.value.filter(x=>x.completed).forEach(x => { if(counts[x.identityId] !== undefined) counts[x.identityId]++; });
+      state.habits.filter(h => h.completedDates.includes(t.value)).forEach(h => { if(counts[h.identityId] !== undefined) counts[h.identityId]++; });
+      const max = Math.max(1, ...Object.values(counts));
+      return state.identities.map(i => ({ ...i, count: counts[i.id] || 0, pct: Math.round(((counts[i.id]||0)/max)*100) }));
+    });
+
+    const last7Days = computed(() => {
+      const arr = [];
+      for(let i=6;i>=0;i--){
+        const d = new Date(); d.setDate(d.getDate()-i);
+        const key = d.toISOString().slice(0,10);
+        const h = state.history[key];
+        arr.push({ key, label: d.toLocaleDateString(undefined,{weekday:'short'}).slice(0,2), score: h ? h.score : null });
+      }
+      return arr;
+    });
+
+    /* ---- Task actions ---- */
+    const taskModal = reactive({ open:false, editing:null, title:'', dueDate: todayStr(), priority:'Med', duration:30, goalId:'', identityId:'' });
+    function openTaskModal(task){
+      if(task){
+        Object.assign(taskModal, { open:true, editing:task.id, title:task.title, dueDate:task.dueDate, priority:task.priority, duration:task.duration, goalId:task.goalId||'', identityId:task.identityId||'' });
+      } else {
+        Object.assign(taskModal, { open:true, editing:null, title:'', dueDate: todayStr(), priority:'Med', duration:30, goalId:'', identityId: state.identities[0]?.id || '' });
+      }
+    }
+    function closeTaskModal(){ taskModal.open = false; }
+    function saveTask(){
+      if(!taskModal.title.trim()) return;
+      if(taskModal.editing){
+        const task = state.tasks.find(x=>x.id===taskModal.editing);
+        Object.assign(task, { title:taskModal.title, dueDate:taskModal.dueDate, priority:taskModal.priority, duration:Number(taskModal.duration)||0, goalId:taskModal.goalId||null, identityId:taskModal.identityId||null });
+      } else {
+        state.tasks.push({ id: uid(), title:taskModal.title, dueDate:taskModal.dueDate, priority:taskModal.priority, duration:Number(taskModal.duration)||0, goalId:taskModal.goalId||null, identityId:taskModal.identityId||null, rollover:0, completed:false, completedAt:null });
+      }
+      closeTaskModal();
+    }
+    function toggleTaskComplete(task){
+      task.completed = !task.completed;
+      task.completedAt = task.completed ? todayStr() : null;
+    }
+    function deleteTask(task){
+      if(!confirm('Delete "'+task.title+'"?')) return;
+      state.tasks = state.tasks.filter(x=>x.id!==task.id);
+      if(state.oneThing.taskId === task.id) state.oneThing.taskId = null;
+    }
+    function setAsOneThing(task){
+      state.oneThing = { date: todayStr(), taskId: state.oneThing.taskId === task.id ? null : task.id };
+    }
+    function bumpRollover(task){ task.rollover = (task.rollover||0)+1; }
+
+    /* ---- Habit actions ---- */
+    const habitModal = reactive({ open:false, editing:null, title:'', frequency:'daily', identityId:'' });
+    function openHabitModal(habit){
+      if(habit){ Object.assign(habitModal, { open:true, editing:habit.id, title:habit.title, frequency:habit.frequency, identityId:habit.identityId||'' }); }
+      else { Object.assign(habitModal, { open:true, editing:null, title:'', frequency:'daily', identityId: state.identities[0]?.id || '' }); }
+    }
+    function closeHabitModal(){ habitModal.open = false; }
+    function saveHabit(){
+      if(!habitModal.title.trim()) return;
+      if(habitModal.editing){
+        const h = state.habits.find(x=>x.id===habitModal.editing);
+        Object.assign(h, { title:habitModal.title, frequency:habitModal.frequency, identityId:habitModal.identityId||null });
+      } else {
+        state.habits.push({ id: uid(), title:habitModal.title, frequency:habitModal.frequency, identityId:habitModal.identityId||null, streak:0, bestStreak:0, completedDates:[] });
+      }
+      closeHabitModal();
+    }
+    function deleteHabit(h){
+      if(!confirm('Delete "'+h.title+'"?')) return;
+      state.habits = state.habits.filter(x=>x.id!==h.id);
+    }
+    function toggleHabitToday(h){
+      const today = todayStr();
+      const idx = h.completedDates.indexOf(today);
+      if(idx >= 0){
+        h.completedDates.splice(idx,1);
+        h.streak = Math.max(0, h.streak-1);
+      } else {
+        h.completedDates.push(today);
+        const yest = new Date(); yest.setDate(yest.getDate()-1);
+        const yKey = yest.toISOString().slice(0,10);
+        h.streak = h.completedDates.includes(yKey) ? h.streak+1 : 1;
+        if(h.streak > h.bestStreak) h.bestStreak = h.streak;
+      }
+    }
+
+    /* ---- Goal actions ---- */
+    const goalModal = reactive({ open:false, editing:null, title:'', type:'monthly', identityId:'', targetDate:'', status:'Active' });
+    function openGoalModal(goal){
+      if(goal){ Object.assign(goalModal, { open:true, editing:goal.id, title:goal.title, type:goal.type, identityId:goal.identityId||'', targetDate:goal.targetDate||'', status:goal.status }); }
+      else { Object.assign(goalModal, { open:true, editing:null, title:'', type:'monthly', identityId: state.identities[0]?.id || '', targetDate:'', status:'Active' }); }
+    }
+    function closeGoalModal(){ goalModal.open = false; }
+    function saveGoal(){
+      if(!goalModal.title.trim()) return;
+      if(goalModal.editing){
+        const g = state.goals.find(x=>x.id===goalModal.editing);
+        Object.assign(g, { title:goalModal.title, type:goalModal.type, identityId:goalModal.identityId||null, targetDate:goalModal.targetDate||null, status:goalModal.status });
+      } else {
+        state.goals.push({ id: uid(), title:goalModal.title, type:goalModal.type, identityId:goalModal.identityId||null, targetDate:goalModal.targetDate||null, status:goalModal.status });
+      }
+      closeGoalModal();
+    }
+    function deleteGoal(g){
+      if(!confirm('Delete "'+g.title+'"?')) return;
+      state.goals = state.goals.filter(x=>x.id!==g.id);
+    }
+    function toggleGoalStatus(g){ g.status = g.status === 'Active' ? 'Completed' : 'Active'; }
+    function goalTaskCount(g){ return state.tasks.filter(x=>x.goalId===g.id).length; }
+    function goalTaskDoneCount(g){ return state.tasks.filter(x=>x.goalId===g.id && x.completed).length; }
+
+    /* ---- Identity actions ---- */
+    const identityModal = reactive({ open:false, editing:null, name:'', kind:'desired', why:'' });
+    function openIdentityModal(identity){
+      if(identity){ Object.assign(identityModal, { open:true, editing:identity.id, name:identity.name, kind:identity.kind, why:identity.why||'' }); }
+      else { Object.assign(identityModal, { open:true, editing:null, name:'', kind:'desired', why:'' }); }
+    }
+    function closeIdentityModal(){ identityModal.open = false; }
+    function saveIdentity(){
+      if(!identityModal.name.trim()) return;
+      if(identityModal.editing){
+        const i = state.identities.find(x=>x.id===identityModal.editing);
+        Object.assign(i, { name:identityModal.name, kind:identityModal.kind, why:identityModal.why });
+      } else {
+        state.identities.push({ id: uid(), name:identityModal.name, kind:identityModal.kind, why:identityModal.why });
+      }
+      closeIdentityModal();
+    }
+    function deleteIdentity(i){
+      if(!confirm('Delete "'+i.name+'"? Goals, tasks, and habits linked to it will become unassigned.')) return;
+      state.identities = state.identities.filter(x=>x.id!==i.id);
+      state.goals.forEach(g => { if(g.identityId===i.id) g.identityId = null; });
+      state.tasks.forEach(x => { if(x.identityId===i.id) x.identityId = null; });
+      state.habits.forEach(h => { if(h.identityId===i.id) h.identityId = null; });
+    }
+
+    function finishOnboarding(){
+      state.onboarded = true;
+      showOnboarding.value = false;
+      activeTab.value = 'dashboard';
+    }
+    function resetAllData(){
+      if(!confirm('This will erase all LifeOS data on this device. Continue?')) return;
+      localStorage.removeItem(STORAGE_KEY);
+      Object.assign(state, seedData());
+      state.onboarded = false;
+      showOnboarding.value = true;
+      activeTab.value = 'identity';
+    }
+
+    /* ---- Check-in ---- */
+    const checkinForm = reactive({ energy:3, mood:3, win:'', blockers:'', oneThingCompleted:false });
+    function loadCheckinForm(){
+      const existing = state.checkins[t.value];
+      if(existing) Object.assign(checkinForm, existing);
+      else Object.assign(checkinForm, { energy:3, mood:3, win:'', blockers:'', oneThingCompleted: oneThingCompletionPct.value === 100 });
+    }
+    loadCheckinForm();
+    function saveCheckin(){
+      state.checkins[t.value] = { ...checkinForm, date: t.value };
+    }
+    const checkinSaved = ref(false);
+    function submitCheckin(){
+      saveCheckin();
+      checkinSaved.value = true;
+      setTimeout(()=> checkinSaved.value = false, 2200);
+    }
+
+    /* ---- Icons refresh ---- */
+    function refreshIcons(){ nextTick(() => { if(window.lucide) window.lucide.createIcons(); }); }
+    onMounted(refreshIcons);
+    watch(activeTab, refreshIcons);
+    watch(() => JSON.stringify(state), refreshIcons);
+    watch([() => taskModal.open, () => habitModal.open, () => goalModal.open, () => identityModal.open, () => showOnboarding.value, () => showMoreSheet.value, () => showSplash.value], refreshIcons);
+
+    /* ---- Filters for Tasks view ---- */
+    const taskFilter = ref('today');
+    const filteredTasks = computed(() => {
+      const t2 = todayStr();
+      if(taskFilter.value === 'today') return state.tasks.filter(x => x.dueDate === t2 && !x.completed);
+      if(taskFilter.value === 'upcoming') return state.tasks.filter(x => x.dueDate > t2 && !x.completed);
+      if(taskFilter.value === 'overdue') return state.tasks.filter(x => x.dueDate < t2 && !x.completed);
+      return state.tasks.filter(x => x.completed);
+    });
+
+    const priorityColor = (p) => p === 'High' ? 'var(--high)' : p === 'Med' ? 'var(--med)' : 'var(--low)';
+
+    return {
+      state, PRIMARY_TABS, MORE_TABS, ALL_TABS, activeTab, showOnboarding, t,
+      showMoreSheet, isMoreTabActive, selectTab, showSplash, splashLeaving, motivationLine,
+      todaysTasks, todaysTasksIncomplete, identityById,
+      recommendation, lifeScore, taskCompletionPct, habitCompletionPct, oneThingCompletionPct, checkinCompletedPct,
+      identityDistribution, last7Days,
+      taskModal, openTaskModal, closeTaskModal, saveTask, toggleTaskComplete, deleteTask, setAsOneThing, bumpRollover,
+      habitModal, openHabitModal, closeHabitModal, saveHabit, deleteHabit, toggleHabitToday,
+      goalModal, openGoalModal, closeGoalModal, saveGoal, deleteGoal, toggleGoalStatus, goalTaskCount, goalTaskDoneCount,
+      identityModal, openIdentityModal, closeIdentityModal, saveIdentity, deleteIdentity,
+      finishOnboarding, resetAllData,
+      checkinForm, submitCheckin, checkinSaved,
+      taskFilter, filteredTasks, priorityColor, fmtDate,
+    };
+  },
+  template: `
+  <div class="max-w-md mx-auto min-h-screen flex flex-col relative" style="background:var(--bg);">
+
+    <!-- SPLASH -->
+    <div v-if="showSplash" class="fixed inset-0 z-[100] flex flex-col items-center justify-center transition-all duration-500" :style="'background:var(--bg);' + (splashLeaving ? 'opacity:0; transform:scale(1.06);' : 'opacity:1; transform:scale(1);')">
+      <div class="hero-pattern" style="background:radial-gradient(circle at 50% 30%, rgba(124,108,255,.25) 0%, transparent 55%);"></div>
+      <div class="relative flex flex-col items-center">
+        <div class="splash-logo w-20 h-20 rounded-3xl flex items-center justify-center mb-5 btn-primary">
+          <i data-lucide="sparkles" class="w-9 h-9 text-white"></i>
+        </div>
+        <h1 class="font-display text-2xl font-bold splash-fade-in" style="animation-delay:.15s;">LifeOS</h1>
+        <p class="text-xs mt-2 splash-fade-in" style="color:var(--muted); animation-delay:.32s;">Become who you're meant to be.</p>
+        <div class="flex gap-1.5 mt-6 splash-fade-in" style="animation-delay:.5s;">
+          <span class="splash-dot" style="animation-delay:0s;"></span>
+          <span class="splash-dot" style="animation-delay:.15s;"></span>
+          <span class="splash-dot" style="animation-delay:.3s;"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ONBOARDING -->
+    <div v-if="showOnboarding" class="fixed inset-0 z-50 overflow-y-auto" style="background:var(--bg);">
+      <div class="max-w-md mx-auto px-5 safe-top pb-10">
+        <div class="pt-4 pb-6">
+          <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-4" style="background:var(--violet-dim);">
+            <i data-lucide="sparkles" class="w-6 h-6" style="color:var(--violet);"></i>
+          </div>
+          <h1 class="font-display text-2xl font-semibold">Welcome to LifeOS</h1>
+          <p class="text-sm mt-2" style="color:var(--muted);">Before goals and tasks, define who you're becoming. Every action you log will connect back to an identity — that's what makes it stick.</p>
+        </div>
+
+        <div class="card p-4 mb-4">
+          <p class="text-xs font-semibold mb-3" style="color:var(--muted);">WHY IDENTITY FIRST?</p>
+          <p class="text-sm leading-relaxed" style="color:var(--text);">Behavior change that lasts comes from identity, not willpower. "I completed a task" fades. "I'm becoming a Developer" compounds. LifeOS tags every goal, task, and habit to an identity so your daily score reflects real growth, not just busywork.</p>
+        </div>
+
+        <p class="text-xs font-semibold mb-2 px-1" style="color:var(--muted);">YOUR IDENTITIES</p>
+        <div class="space-y-2 mb-4">
+          <div v-for="i in state.identities" :key="i.id" class="card-2 p-3 flex items-center justify-between">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-medium text-sm">{{ i.name }}</span>
+                <span class="chip" :style="i.kind==='current' ? 'background:var(--gold-dim);color:var(--gold);' : 'background:var(--violet-dim);color:var(--violet);'">{{ i.kind === 'current' ? 'Current' : 'Desired' }}</span>
+              </div>
+              <p class="text-xs mt-1" style="color:var(--muted);">{{ i.why || 'No reason set yet.' }}</p>
+            </div>
+            <button @click="openIdentityModal(i)" class="p-2"><i data-lucide="pencil" class="w-4 h-4" style="color:var(--muted);"></i></button>
+          </div>
+        </div>
+
+        <button @click="openIdentityModal(null)" class="w-full card-2 p-3 flex items-center justify-center gap-2 mb-6 text-sm font-medium" style="color:var(--muted);">
+          <i data-lucide="plus" class="w-4 h-4"></i> Add identity
+        </button>
+
+        <button @click="finishOnboarding" class="w-full btn-primary rounded-2xl py-3.5 font-semibold font-display">Let's build the life you want →</button>
+      </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <template v-if="!showOnboarding">
+      <!-- HEADER -->
+      <div class="safe-top px-5 pt-4 pb-3 sticky top-0 z-30" style="background:var(--bg);">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-xs" style="color:var(--muted);">{{ new Date().toLocaleDateString(undefined,{weekday:'long', month:'long', day:'numeric'}) }}</p>
+            <h1 v-if="activeTab==='dashboard'" class="font-display text-xl font-semibold">Let's build today 💪</h1>
+            <h1 v-else class="font-display text-xl font-semibold capitalize">{{ activeTab === 'checkin' ? 'Check-In' : activeTab === 'analytics' ? 'Analytics' : activeTab }}</h1>
+          </div>
+          <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background:var(--surface-2); border:1px solid var(--border);">
+            <span class="font-display font-semibold text-sm" :style="'color:' + (lifeScore>=70?'var(--low)':lifeScore>=40?'var(--gold)':'var(--high)')">{{ lifeScore }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTENT -->
+      <div class="flex-1 overflow-y-auto px-5 pb-32 no-scrollbar">
+        <transition name="fade" mode="out-in">
+
+        <!-- DASHBOARD -->
+        <div v-if="activeTab==='dashboard'" key="dashboard">
+          <!-- Motivation banner -->
+          <div class="flex items-center gap-2.5 mb-4 px-1">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style="background:var(--gold-dim);">
+              <i data-lucide="flame" class="w-4 h-4" style="color:var(--gold);"></i>
+            </div>
+            <p class="text-sm font-medium leading-snug" style="color:var(--text);">{{ motivationLine }}</p>
+          </div>
+
+          <!-- Life score ring -->
+          <div class="card p-5 mb-4 flex items-center gap-5 glow">
+            <div class="relative w-24 h-24 shrink-0">
+              <svg viewBox="0 0 100 100" class="w-24 h-24 -rotate-90">
+                <circle cx="50" cy="50" r="42" fill="none" stroke-width="9" class="ring-track"/>
+                <circle cx="50" cy="50" r="42" fill="none" stroke-width="9" stroke-linecap="round"
+                  :stroke="lifeScore>=70?'#59D68C':lifeScore>=40?'#F2B84B':'#FF6B6B'"
+                  :stroke-dasharray="2*Math.PI*42"
+                  :stroke-dashoffset="2*Math.PI*42*(1-lifeScore/100)"
+                  style="transition: stroke-dashoffset .5s ease;"/>
+              </svg>
+              <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <span class="font-display text-2xl font-bold">{{ lifeScore }}</span>
+                <span class="text-[10px]" style="color:var(--muted);">LIFE SCORE</span>
+              </div>
+            </div>
+            <div class="flex-1 space-y-2">
+              <div class="flex items-center justify-between text-xs">
+                <span style="color:var(--muted);">Tasks</span><span class="font-semibold">{{ taskCompletionPct }}%</span>
+              </div>
+              <div class="flex items-center justify-between text-xs">
+                <span style="color:var(--muted);">Habits</span><span class="font-semibold">{{ habitCompletionPct }}%</span>
+              </div>
+              <div class="flex items-center justify-between text-xs">
+                <span style="color:var(--muted);">One Thing</span><span class="font-semibold">{{ oneThingCompletionPct }}%</span>
+              </div>
+              <div class="flex items-center justify-between text-xs">
+                <span style="color:var(--muted);">Check-In</span><span class="font-semibold">{{ checkinCompletedPct }}%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- What should I do right now -->
+          <div class="rounded-3xl p-5 mb-4 relative overflow-hidden" style="background:linear-gradient(135deg,#7C6CFF,#4C3FCE);">
+            <div class="hero-pattern"></div>
+            <div class="relative flex items-center gap-2">
+              <div class="w-6 h-6 rounded-lg flex items-center justify-center shrink-0" style="background:rgba(255,255,255,.18);">
+                <i data-lucide="zap" class="w-3.5 h-3.5 text-white"></i>
+              </div>
+              <p class="text-[11px] font-bold tracking-wide" style="color:#E4E0FF;">WHAT SHOULD I DO RIGHT NOW?</p>
+            </div>
+            <template v-if="recommendation">
+              <p class="font-display text-lg font-semibold mt-2 text-white leading-snug">{{ recommendation.task.title }}</p>
+              <p class="text-xs mt-1.5" style="color:#E4E0FF;">{{ recommendation.reason }}</p>
+              <div class="flex items-center gap-2 mt-3">
+                <span class="chip" style="background:rgba(255,255,255,.18); color:white;" v-if="identityById(recommendation.task.identityId)">
+                  As a {{ identityById(recommendation.task.identityId).name }}
+                </span>
+                <span class="chip" style="background:rgba(255,255,255,.18); color:white;">{{ recommendation.task.duration }}m</span>
+              </div>
+              <button @click="toggleTaskComplete(recommendation.task)" class="mt-4 w-full bg-white rounded-2xl py-3 font-semibold text-sm flex items-center justify-center gap-2" style="color:#4C3FCE;">
+                <i data-lucide="check" class="w-4 h-4"></i> Let's go — mark it done 🚀
+              </button>
+            </template>
+            <template v-else>
+              <p class="font-display text-lg font-semibold mt-2 text-white">Crushed it — all clear today! 🎉</p>
+              <p class="text-xs mt-1.5" style="color:#E4E0FF;">Nothing left to do — that's a win. Add something new or just enjoy it.</p>
+            </template>
+          </div>
+
+          <!-- One Thing -->
+          <div class="card p-4 mb-4" :style="state.tasks.find(x=>x.id===state.oneThing.taskId) && state.tasks.find(x=>x.id===state.oneThing.taskId).completed ? 'border-color:var(--low);' : 'border-color:var(--gold-dim);'">
+            <div class="flex items-center gap-2 mb-2">
+              <i data-lucide="star" class="w-4 h-4" style="color:var(--gold);"></i>
+              <p class="text-xs font-bold tracking-wide" style="color:var(--gold);">TODAY'S ONE THING</p>
+            </div>
+            <div v-if="state.tasks.find(x=>x.id===state.oneThing.taskId)">
+              <p class="font-medium" :class="{'strike': state.tasks.find(x=>x.id===state.oneThing.taskId).completed}">{{ state.tasks.find(x=>x.id===state.oneThing.taskId).title }}</p>
+              <button @click="toggleTaskComplete(state.tasks.find(x=>x.id===state.oneThing.taskId))" class="text-xs mt-2 font-bold flex items-center gap-1" :style="state.tasks.find(x=>x.id===state.oneThing.taskId).completed ? 'color:var(--low);' : 'color:var(--gold);'">
+                <i :data-lucide="state.tasks.find(x=>x.id===state.oneThing.taskId).completed ? 'check-circle-2' : 'circle'" class="w-3.5 h-3.5"></i>
+                {{ state.tasks.find(x=>x.id===state.oneThing.taskId).completed ? "Nailed it — that's today made 🎯" : 'Mark as complete' }}
+              </button>
+            </div>
+            <div v-else class="text-sm" style="color:var(--muted);">
+              One focused win changes the whole day.
+              <button @click="activeTab='tasks'" class="font-semibold" style="color:var(--gold);"> Pick it now →</button>
+            </div>
+          </div>
+
+          <!-- Identity distribution -->
+          <div class="card p-4 mb-4">
+            <p class="text-xs font-semibold mb-3" style="color:var(--muted);">IDENTITY ACTIVITY TODAY</p>
+            <div class="space-y-3">
+              <div v-for="i in identityDistribution" :key="i.id">
+                <div class="flex justify-between text-xs mb-1">
+                  <span>{{ i.name }}</span><span style="color:var(--muted);">{{ i.count }} actions</span>
+                </div>
+                <div class="h-2 rounded-full" style="background:var(--surface-3);">
+                  <div class="h-2 rounded-full" :style="'width:'+i.pct+'%; background:'+(i.kind==='current'?'var(--gold)':'var(--violet)')+';'"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick nav to tasks -->
+          <p class="text-xs font-semibold mb-2 px-1" style="color:var(--muted);">TODAY'S TASKS</p>
+          <div class="space-y-2 mb-4">
+            <div v-for="task in todaysTasks" :key="task.id" class="card-2 p-3 flex items-center gap-3">
+              <button @click="toggleTaskComplete(task)" class="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0" :style="'border-color:'+priorityColor(task.priority)+'; background:'+(task.completed?priorityColor(task.priority):'transparent')">
+                <i v-if="task.completed" data-lucide="check" class="w-3 h-3 text-black"></i>
+              </button>
+              <span class="text-sm flex-1" :class="{strike:task.completed}">{{ task.title }}</span>
+              <span v-if="task.id===state.oneThing.taskId" ><i data-lucide="star" class="w-4 h-4" style="color:var(--gold);"></i></span>
+            </div>
+            <div v-if="todaysTasks.length===0" class="text-sm text-center py-4" style="color:var(--muted);">Nothing scheduled today.</div>
+          </div>
+        </div>
+
+        <!-- TASKS -->
+        <div v-else-if="activeTab==='tasks'" key="tasks">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex gap-2 overflow-x-auto no-scrollbar">
+              <button v-for="f in [['today','Today'],['upcoming','Upcoming'],['overdue','Overdue'],['completed','Completed']]" :key="f[0]"
+                @click="taskFilter=f[0]" class="chip px-3 py-1.5 shrink-0" :style="taskFilter===f[0] ? 'background:var(--violet-dim); color:var(--violet);' : 'background:var(--surface-2); color:var(--muted);'">{{ f[1] }}</button>
+            </div>
+            <button @click="openTaskModal(null)" class="add-btn shrink-0 ml-2"><i data-lucide="plus" class="w-3.5 h-3.5"></i>Add</button>
+          </div>
+
+          <transition-group name="list" tag="div" class="space-y-2">
+            <div v-for="task in filteredTasks" :key="task.id" class="card-2 p-3">
+              <div class="flex items-start gap-3">
+                <button @click="toggleTaskComplete(task)" class="w-5 h-5 mt-0.5 rounded-full border-2 flex items-center justify-center shrink-0" :style="'border-color:'+priorityColor(task.priority)+'; background:'+(task.completed?priorityColor(task.priority):'transparent')">
+                  <i v-if="task.completed" data-lucide="check" class="w-3 h-3 text-black"></i>
+                </button>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium" :class="{strike:task.completed}">{{ task.title }}</p>
+                  <div class="flex flex-wrap items-center gap-1.5 mt-1.5">
+                    <span class="chip" :style="'background:'+priorityColor(task.priority)+'22; color:'+priorityColor(task.priority)+';'">{{ task.priority }}</span>
+                    <span class="chip" style="background:var(--surface-3); color:var(--muted);">{{ fmtDate(task.dueDate) }}</span>
+                    <span class="chip" style="background:var(--surface-3); color:var(--muted);">{{ task.duration }}m</span>
+                    <span v-if="task.rollover>0" class="chip" style="background:#FF6B6B22; color:#FF6B6B;">↻ {{ task.rollover }}</span>
+                    <span v-if="identityById(task.identityId)" class="chip" style="background:var(--violet-dim); color:var(--violet);">{{ identityById(task.identityId).name }}</span>
+                  </div>
+                </div>
+                <div class="flex flex-col items-center gap-1.5 shrink-0">
+                  <button @click="setAsOneThing(task)" class="icon-btn" :style="task.id===state.oneThing.taskId ? 'background:var(--gold-dim);' : ''"><i data-lucide="star" class="w-4 h-4" :style="task.id===state.oneThing.taskId ? 'color:var(--gold); fill:var(--gold);' : 'color:var(--muted-2);'"></i></button>
+                  <button @click="openTaskModal(task)" class="icon-btn"><i data-lucide="pencil" class="w-3.5 h-3.5" style="color:var(--muted-2);"></i></button>
+                  <button @click="deleteTask(task)" class="icon-btn icon-btn-danger"><i data-lucide="trash-2" class="w-3.5 h-3.5" style="color:var(--high);"></i></button>
+                </div>
+              </div>
+            </div>
+            <div v-if="filteredTasks.length===0" key="empty" class="empty-state">
+              <div class="icon-wrap"><i data-lucide="list-checks" class="w-6 h-6" style="color:var(--muted-2);"></i></div>
+              <p class="text-sm font-medium">A clean slate</p>
+              <p class="text-xs mt-1 mb-4" style="color:var(--muted);">Add a task and start building momentum.</p>
+              <button @click="openTaskModal(null)" class="add-btn"><i data-lucide="plus" class="w-3.5 h-3.5"></i>Add a task</button>
+            </div>
+          </transition-group>
+        </div>
+
+        <!-- HABITS -->
+        <div v-else-if="activeTab==='habits'" key="habits">
+          <div class="flex items-center justify-between mb-4">
+            <p class="section-title">{{ state.habits.length }} habit{{ state.habits.length===1?'':'s' }}</p>
+            <button @click="openHabitModal(null)" class="add-btn"><i data-lucide="plus" class="w-3.5 h-3.5"></i>Add</button>
+          </div>
+          <transition-group name="list" tag="div" class="space-y-2">
+            <div v-for="h in state.habits" :key="h.id" class="card-2 p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium">{{ h.title }}</p>
+                  <div class="flex flex-wrap items-center gap-1.5 mt-1.5">
+                    <span class="chip" style="background:var(--surface-3); color:var(--muted);">{{ h.frequency }}</span>
+                    <span v-if="identityById(h.identityId)" class="chip" style="background:var(--violet-dim); color:var(--violet);">{{ identityById(h.identityId).name }}</span>
+                  </div>
+                  <div class="flex items-center gap-3 mt-2 text-xs" style="color:var(--muted);">
+                    <span class="flex items-center gap-1"><i data-lucide="flame" class="w-3.5 h-3.5" style="color:var(--med);"></i>{{ h.streak }} day{{ h.streak===1?'':'s' }} strong</span>
+                    <span class="flex items-center gap-1"><i data-lucide="trophy" class="w-3.5 h-3.5" style="color:var(--gold);"></i>best {{ h.bestStreak }}</span>
+                  </div>
+                </div>
+                <div class="flex flex-col items-end gap-2">
+                  <button @click="toggleHabitToday(h)" class="w-10 h-10 rounded-full flex items-center justify-center transition-transform active:scale-90" :style="h.completedDates.includes(t) ? 'background:var(--low);' : 'background:var(--surface-3); border:1px solid var(--border);'">
+                    <i data-lucide="check" class="w-4 h-4" :style="h.completedDates.includes(t) ? 'color:#0A0C10;' : 'color:var(--muted-2);'"></i>
+                  </button>
+                  <div class="flex gap-1.5">
+                    <button @click="openHabitModal(h)" class="icon-btn"><i data-lucide="pencil" class="w-3.5 h-3.5" style="color:var(--muted-2);"></i></button>
+                    <button @click="deleteHabit(h)" class="icon-btn icon-btn-danger"><i data-lucide="trash-2" class="w-3.5 h-3.5" style="color:var(--high);"></i></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div v-if="state.habits.length===0" key="empty" class="empty-state">
+              <div class="icon-wrap"><i data-lucide="flame" class="w-6 h-6" style="color:var(--muted-2);"></i></div>
+              <p class="text-sm font-medium">Your first habit starts here</p>
+              <p class="text-xs mt-1 mb-4" style="color:var(--muted);">One small daily habit compounds into a whole new identity.</p>
+              <button @click="openHabitModal(null)" class="add-btn"><i data-lucide="plus" class="w-3.5 h-3.5"></i>Add a habit</button>
+            </div>
+          </transition-group>
+        </div>
+
+        <!-- GOALS -->
+        <div v-else-if="activeTab==='goals'" key="goals">
+          <div class="flex items-center justify-between mb-4">
+            <p class="section-title">{{ state.goals.length }} goal{{ state.goals.length===1?'':'s' }}</p>
+            <button @click="openGoalModal(null)" class="add-btn"><i data-lucide="plus" class="w-3.5 h-3.5"></i>Add</button>
+          </div>
+          <transition-group name="list" tag="div" class="space-y-2">
+            <div v-for="g in state.goals" :key="g.id" class="card-2 p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium" :class="{strike:g.status==='Completed'}">{{ g.title }}</p>
+                  <div class="flex flex-wrap items-center gap-1.5 mt-1.5">
+                    <span class="chip" style="background:var(--surface-3); color:var(--muted);">{{ g.type==='long-term'?'Long-term':'Monthly' }}</span>
+                    <span v-if="identityById(g.identityId)" class="chip" style="background:var(--violet-dim); color:var(--violet);">{{ identityById(g.identityId).name }}</span>
+                    <span class="chip" :style="g.status==='Completed' ? 'background:var(--low)22; color:var(--low);' : 'background:var(--gold-dim); color:var(--gold);'">{{ g.status }}</span>
+                    <span v-if="g.targetDate" class="chip" style="background:var(--surface-3); color:var(--muted);">by {{ fmtDate(g.targetDate) }}</span>
+                  </div>
+                  <div v-if="goalTaskCount(g)>0" class="mt-2">
+                    <div class="h-1.5 rounded-full" style="background:var(--surface-3);">
+                      <div class="h-1.5 rounded-full" style="background:var(--violet);" :style="'width:'+Math.round(goalTaskDoneCount(g)/goalTaskCount(g)*100)+'%'"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex flex-col items-end gap-1.5 shrink-0">
+                  <button @click="toggleGoalStatus(g)" class="icon-btn" :style="g.status==='Completed' ? 'background:var(--low)22;' : ''"><i data-lucide="check-circle-2" class="w-3.5 h-3.5" :style="g.status==='Completed' ? 'color:var(--low);' : 'color:var(--muted-2);'"></i></button>
+                  <button @click="openGoalModal(g)" class="icon-btn"><i data-lucide="pencil" class="w-3.5 h-3.5" style="color:var(--muted-2);"></i></button>
+                  <button @click="deleteGoal(g)" class="icon-btn icon-btn-danger"><i data-lucide="trash-2" class="w-3.5 h-3.5" style="color:var(--high);"></i></button>
+                </div>
+              </div>
+            </div>
+            <div v-if="state.goals.length===0" key="empty" class="empty-state">
+              <div class="icon-wrap"><i data-lucide="target" class="w-6 h-6" style="color:var(--muted-2);"></i></div>
+              <p class="text-sm font-medium">Dream a little — set your first goal</p>
+              <p class="text-xs mt-1 mb-4" style="color:var(--muted);">Pick something worth chasing and tie it to who you want to become.</p>
+              <button @click="openGoalModal(null)" class="add-btn"><i data-lucide="plus" class="w-3.5 h-3.5"></i>Add a goal</button>
+            </div>
+          </transition-group>
+        </div>
+
+        <!-- IDENTITY -->
+        <div v-else-if="activeTab==='identity'" key="identity">
+          <div class="card p-4 mb-4">
+            <p class="text-xs leading-relaxed" style="color:var(--muted);">Every goal, task, and habit connects to one of these identities. Reviewing them regularly keeps your daily actions aligned with who you're becoming — not just what's on your to-do list.</p>
+          </div>
+
+          <div class="flex items-center justify-between mb-2 px-1">
+            <p class="section-title" style="color:var(--gold);">Current identities</p>
+            <button @click="openIdentityModal(null)" class="icon-btn"><i data-lucide="plus" class="w-3.5 h-3.5" style="color:var(--gold);"></i></button>
+          </div>
+          <transition-group name="list" tag="div" class="space-y-2 mb-5">
+            <div v-for="i in state.identities.filter(x=>x.kind==='current')" :key="i.id" class="card-2 p-3 flex items-start justify-between" style="border-left:3px solid var(--gold);">
+              <div class="min-w-0 pr-2"><p class="font-medium text-sm">{{ i.name }}</p><p class="text-xs mt-1" style="color:var(--muted);">{{ i.why }}</p></div>
+              <div class="flex gap-1.5 shrink-0"><button @click="openIdentityModal(i)" class="icon-btn"><i data-lucide="pencil" class="w-3.5 h-3.5" style="color:var(--muted-2);"></i></button><button @click="deleteIdentity(i)" class="icon-btn icon-btn-danger"><i data-lucide="trash-2" class="w-3.5 h-3.5" style="color:var(--high);"></i></button></div>
+            </div>
+            <div v-if="state.identities.filter(x=>x.kind==='current').length===0" key="empty-c" class="text-xs text-center py-4" style="color:var(--muted);">No current identities yet.</div>
+          </transition-group>
+
+          <div class="flex items-center justify-between mb-2 px-1">
+            <p class="section-title" style="color:var(--violet);">Desired identities</p>
+            <button @click="openIdentityModal(null)" class="icon-btn"><i data-lucide="plus" class="w-3.5 h-3.5" style="color:var(--violet);"></i></button>
+          </div>
+          <transition-group name="list" tag="div" class="space-y-2 mb-4">
+            <div v-for="i in state.identities.filter(x=>x.kind==='desired')" :key="i.id" class="card-2 p-3 flex items-start justify-between" style="border-left:3px solid var(--violet);">
+              <div class="min-w-0 pr-2"><p class="font-medium text-sm">{{ i.name }}</p><p class="text-xs mt-1" style="color:var(--muted);">{{ i.why }}</p></div>
+              <div class="flex gap-1.5 shrink-0"><button @click="openIdentityModal(i)" class="icon-btn"><i data-lucide="pencil" class="w-3.5 h-3.5" style="color:var(--muted-2);"></i></button><button @click="deleteIdentity(i)" class="icon-btn icon-btn-danger"><i data-lucide="trash-2" class="w-3.5 h-3.5" style="color:var(--high);"></i></button></div>
+            </div>
+            <div v-if="state.identities.filter(x=>x.kind==='desired').length===0" key="empty-d" class="text-xs text-center py-4" style="color:var(--muted);">No desired identities yet.</div>
+          </transition-group>
+
+          <button @click="openIdentityModal(null)" class="w-full card-2 p-3 flex items-center justify-center gap-2 mb-6 text-sm font-medium" style="color:var(--muted);"><i data-lucide="plus" class="w-4 h-4"></i> Add identity</button>
+
+          <div class="card p-4 mb-4" style="border-color:#FF6B6B44;">
+            <p class="section-title mb-2" style="color:var(--high);">Danger zone</p>
+            <p class="text-xs mb-3" style="color:var(--muted);">Erase all local LifeOS data on this device and start fresh.</p>
+            <button @click="resetAllData" class="w-full rounded-xl py-2.5 text-sm font-semibold" style="background:#FF6B6B22; color:var(--high);">Reset all data</button>
+          </div>
+        </div>
+
+        <!-- CHECK-IN -->
+        <div v-else-if="activeTab==='checkin'" key="checkin">
+          <div class="card p-4 mb-4">
+            <label class="text-xs font-semibold" style="color:var(--muted);">ENERGY LEVEL: {{ checkinForm.energy }}/5</label>
+            <input type="range" min="1" max="5" step="1" v-model.number="checkinForm.energy" class="w-full mt-2">
+          </div>
+          <div class="card p-4 mb-4">
+            <label class="text-xs font-semibold" style="color:var(--muted);">MOOD: {{ checkinForm.mood }}/5</label>
+            <input type="range" min="1" max="5" step="1" v-model.number="checkinForm.mood" class="w-full mt-2">
+          </div>
+          <div class="card p-4 mb-4">
+            <label class="text-xs font-semibold" style="color:var(--muted);">BIGGEST WIN TODAY</label>
+            <textarea v-model="checkinForm.win" rows="2" placeholder="What went well?" class="w-full mt-2 rounded-xl p-3 text-sm"></textarea>
+          </div>
+          <div class="card p-4 mb-4">
+            <label class="text-xs font-semibold" style="color:var(--muted);">BLOCKERS</label>
+            <textarea v-model="checkinForm.blockers" rows="2" placeholder="What got in the way?" class="w-full mt-2 rounded-xl p-3 text-sm"></textarea>
+          </div>
+          <div class="card p-4 mb-4 flex items-center justify-between">
+            <div><p class="text-sm font-medium">One Thing completed?</p><p class="text-xs" style="color:var(--muted);">Confirms today's most important task.</p></div>
+            <button @click="checkinForm.oneThingCompleted=!checkinForm.oneThingCompleted" class="w-12 h-7 rounded-full flex items-center px-1" style="transition:background .2s ease;" :style="checkinForm.oneThingCompleted ? 'background:var(--gold); justify-content:flex-end;' : 'background:var(--surface-3); justify-content:flex-start;'">
+              <div class="w-5 h-5 rounded-full bg-white" style="transition:transform .2s ease; box-shadow:0 1px 3px rgba(0,0,0,.3);"></div>
+            </button>
+          </div>
+          <button @click="submitCheckin" class="w-full btn-primary rounded-2xl py-3.5 font-semibold font-display">{{ checkinSaved ? 'Locked in — nice work ✓' : 'Save & close out the day' }}</button>
+        </div>
+
+        <!-- ANALYTICS -->
+        <div v-else-if="activeTab==='analytics'" key="analytics">
+          <div class="card p-4 mb-4">
+            <p class="text-xs font-semibold mb-4" style="color:var(--muted);">LIFE SCORE — LAST 7 DAYS</p>
+            <div class="flex items-end justify-between h-32 gap-2">
+              <div v-for="d in last7Days" :key="d.key" class="flex-1 flex flex-col items-center gap-2">
+                <div class="w-full rounded-t-lg" :style="'height:'+(d.score||2)+'%; background:'+(d.score===null?'var(--surface-3)':d.score>=70?'var(--low)':d.score>=40?'var(--gold)':'var(--high)')+';'"></div>
+                <span class="text-[10px]" style="color:var(--muted);">{{ d.label }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card p-4 mb-4">
+            <p class="text-xs font-semibold mb-3" style="color:var(--muted);">TODAY'S BREAKDOWN</p>
+            <div class="space-y-3">
+              <div v-for="row in [['Tasks (40%)', taskCompletionPct, 'var(--violet)'],['Habits (30%)', habitCompletionPct, 'var(--gold)'],['One Thing (20%)', oneThingCompletionPct, 'var(--low)'],['Check-In (10%)', checkinCompletedPct, 'var(--high)']]" :key="row[0]">
+                <div class="flex justify-between text-xs mb-1"><span>{{ row[0] }}</span><span style="color:var(--muted);">{{ row[1] }}%</span></div>
+                <div class="h-2 rounded-full" style="background:var(--surface-3);"><div class="h-2 rounded-full" :style="'width:'+row[1]+'%; background:'+row[2]+';'"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card p-4 mb-4">
+            <p class="text-xs font-semibold mb-3" style="color:var(--muted);">IDENTITY DISTRIBUTION</p>
+            <div class="space-y-3">
+              <div v-for="i in identityDistribution" :key="i.id">
+                <div class="flex justify-between text-xs mb-1"><span>{{ i.name }}</span><span style="color:var(--muted);">{{ i.count }}</span></div>
+                <div class="h-2 rounded-full" style="background:var(--surface-3);"><div class="h-2 rounded-full" :style="'width:'+i.pct+'%; background:'+(i.kind==='current'?'var(--gold)':'var(--violet)')+';'"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="card-2 p-4 text-center">
+              <p class="font-display text-2xl font-bold">{{ state.tasks.filter(x=>x.completed).length }}</p>
+              <p class="text-xs mt-1" style="color:var(--muted);">Tasks completed all-time</p>
+            </div>
+            <div class="card-2 p-4 text-center">
+              <p class="font-display text-2xl font-bold">{{ Math.max(0,...state.habits.map(h=>h.bestStreak),0) }}</p>
+              <p class="text-xs mt-1" style="color:var(--muted);">Longest habit streak</p>
+            </div>
+          </div>
+        </div>
+
+        </transition>
+      </div>
+
+      <!-- BOTTOM NAV -->
+      <div class="fixed bottom-0 left-0 right-0 z-40">
+        <div class="max-w-md mx-auto px-3 pb-2">
+          <div class="rounded-3xl safe-bottom pt-2 px-1.5 flex justify-between items-center gap-0.5" style="background:var(--surface-2); border:1px solid var(--border); box-shadow:0 -8px 30px rgba(0,0,0,.35);">
+            <button v-for="tab in PRIMARY_TABS" :key="tab.key" @click="selectTab(tab.key)" class="nav-pill flex-1 flex flex-col items-center gap-0.5 py-1.5" :class="activeTab===tab.key ? 'tab-active' : 'tab-inactive'">
+              <i :data-lucide="tab.icon" class="w-5 h-5"></i>
+              <span class="text-[9.5px] font-medium">{{ tab.label }}</span>
+            </button>
+            <button @click="showMoreSheet=true" class="nav-pill flex-1 flex flex-col items-center gap-0.5 py-1.5" :class="isMoreTabActive ? 'tab-active' : 'tab-inactive'">
+              <i data-lucide="grid-2x2" class="w-5 h-5"></i>
+              <span class="text-[9.5px] font-medium">More</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MORE SHEET -->
+      <transition name="modal">
+      <div v-if="showMoreSheet" class="fixed inset-0 z-50 flex items-end" style="background:rgba(0,0,0,.6);" @click.self="showMoreSheet=false">
+        <transition name="sheet" appear>
+        <div class="w-full max-w-md mx-auto card rounded-b-none p-5 safe-bottom" style="border-bottom:none;">
+          <div class="w-10 h-1 rounded-full mx-auto mb-4" style="background:var(--surface-3);"></div>
+          <h2 class="font-display text-lg font-semibold mb-1">More</h2>
+          <p class="text-xs mb-4" style="color:var(--muted);">The bigger picture — set it up, then get back to doing.</p>
+          <div class="space-y-2 mb-2">
+            <button v-for="tab in MORE_TABS" :key="tab.key" @click="selectTab(tab.key)" class="w-full card-2 p-3.5 flex items-center gap-3 text-left" :style="activeTab===tab.key ? 'border-color:var(--violet);' : ''">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" :style="activeTab===tab.key ? 'background:var(--violet-dim);' : 'background:var(--surface-3);'">
+                <i :data-lucide="tab.icon" class="w-5 h-5" :style="activeTab===tab.key ? 'color:var(--violet);' : 'color:var(--muted);'"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold">{{ tab.label }}</p>
+                <p class="text-xs" style="color:var(--muted);">{{ tab.desc }}</p>
+              </div>
+              <i data-lucide="chevron-right" class="w-4 h-4 shrink-0" style="color:var(--muted-2);"></i>
+            </button>
+          </div>
+        </div>
+        </transition>
+      </div>
+      </transition>
+
+      <!-- FAB -->
+      <button v-if="['tasks','habits','goals'].includes(activeTab)" @click="activeTab==='tasks'?openTaskModal(null):activeTab==='habits'?openHabitModal(null):openGoalModal(null)"
+        class="fixed right-5 z-40 w-14 h-14 rounded-full btn-primary flex items-center justify-center glow" style="bottom:96px;">
+        <i data-lucide="plus" class="w-6 h-6"></i>
+      </button>
+    </template>
+
+    <!-- TASK MODAL -->
+    <transition name="modal">
+    <div v-if="taskModal.open" class="fixed inset-0 z-50 flex items-end" style="background:rgba(0,0,0,.6);" @click.self="closeTaskModal">
+      <transition name="sheet" appear>
+      <div class="w-full max-w-md mx-auto card rounded-b-none p-5 safe-bottom" style="border-bottom:none;">
+        <div class="w-10 h-1 rounded-full mx-auto mb-4" style="background:var(--surface-3);"></div>
+        <h2 class="font-display text-lg font-semibold mb-4">{{ taskModal.editing ? 'Edit Task' : 'New Task' }}</h2>
+        <div class="space-y-3">
+          <input v-model="taskModal.title" placeholder="Task title" class="w-full rounded-xl p-3 text-sm">
+          <div class="grid grid-cols-2 gap-3">
+            <input v-model="taskModal.dueDate" type="date" class="w-full rounded-xl p-3 text-sm">
+            <input v-model.number="taskModal.duration" type="number" placeholder="Minutes" class="w-full rounded-xl p-3 text-sm">
+          </div>
+          <select v-model="taskModal.priority" class="w-full rounded-xl p-3 text-sm">
+            <option value="High">High priority</option><option value="Med">Medium priority</option><option value="Low">Low priority</option>
+          </select>
+          <select v-model="taskModal.identityId" class="w-full rounded-xl p-3 text-sm">
+            <option value="">No identity</option>
+            <option v-for="i in state.identities" :key="i.id" :value="i.id">{{ i.name }}</option>
+          </select>
+          <select v-model="taskModal.goalId" class="w-full rounded-xl p-3 text-sm">
+            <option value="">No connected goal</option>
+            <option v-for="g in state.goals" :key="g.id" :value="g.id">{{ g.title }}</option>
+          </select>
+        </div>
+        <div class="flex gap-3 mt-5">
+          <button @click="closeTaskModal" class="flex-1 rounded-xl py-3 text-sm font-semibold" style="background:var(--surface-3); color:var(--muted);">Cancel</button>
+          <button @click="saveTask" class="flex-1 btn-primary rounded-xl py-3 text-sm font-semibold">Save</button>
+        </div>
+      </div>
+      </transition>
+    </div>
+    </transition>
+
+    <!-- HABIT MODAL -->
+    <transition name="modal">
+    <div v-if="habitModal.open" class="fixed inset-0 z-50 flex items-end" style="background:rgba(0,0,0,.6);" @click.self="closeHabitModal">
+      <transition name="sheet" appear>
+      <div class="w-full max-w-md mx-auto card rounded-b-none p-5 safe-bottom" style="border-bottom:none;">
+        <div class="w-10 h-1 rounded-full mx-auto mb-4" style="background:var(--surface-3);"></div>
+        <h2 class="font-display text-lg font-semibold mb-4">{{ habitModal.editing ? 'Edit Habit' : 'New Habit' }}</h2>
+        <div class="space-y-3">
+          <input v-model="habitModal.title" placeholder="Habit title" class="w-full rounded-xl p-3 text-sm">
+          <select v-model="habitModal.frequency" class="w-full rounded-xl p-3 text-sm">
+            <option value="daily">Daily</option><option value="weekdays">Weekdays</option><option value="weekly">Weekly</option>
+          </select>
+          <select v-model="habitModal.identityId" class="w-full rounded-xl p-3 text-sm">
+            <option value="">No identity</option>
+            <option v-for="i in state.identities" :key="i.id" :value="i.id">{{ i.name }}</option>
+          </select>
+        </div>
+        <div class="flex gap-3 mt-5">
+          <button @click="closeHabitModal" class="flex-1 rounded-xl py-3 text-sm font-semibold" style="background:var(--surface-3); color:var(--muted);">Cancel</button>
+          <button @click="saveHabit" class="flex-1 btn-primary rounded-xl py-3 text-sm font-semibold">Save</button>
+        </div>
+      </div>
+      </transition>
+    </div>
+    </transition>
+
+    <!-- GOAL MODAL -->
+    <transition name="modal">
+    <div v-if="goalModal.open" class="fixed inset-0 z-50 flex items-end" style="background:rgba(0,0,0,.6);" @click.self="closeGoalModal">
+      <transition name="sheet" appear>
+      <div class="w-full max-w-md mx-auto card rounded-b-none p-5 safe-bottom" style="border-bottom:none;">
+        <div class="w-10 h-1 rounded-full mx-auto mb-4" style="background:var(--surface-3);"></div>
+        <h2 class="font-display text-lg font-semibold mb-4">{{ goalModal.editing ? 'Edit Goal' : 'New Goal' }}</h2>
+        <div class="space-y-3">
+          <input v-model="goalModal.title" placeholder="Goal title" class="w-full rounded-xl p-3 text-sm">
+          <select v-model="goalModal.type" class="w-full rounded-xl p-3 text-sm">
+            <option value="monthly">Monthly goal</option><option value="long-term">Long-term goal</option>
+          </select>
+          <select v-model="goalModal.identityId" class="w-full rounded-xl p-3 text-sm">
+            <option value="">No identity</option>
+            <option v-for="i in state.identities" :key="i.id" :value="i.id">{{ i.name }}</option>
+          </select>
+          <input v-model="goalModal.targetDate" type="date" class="w-full rounded-xl p-3 text-sm">
+          <select v-model="goalModal.status" class="w-full rounded-xl p-3 text-sm">
+            <option value="Active">Active</option><option value="Completed">Completed</option>
+          </select>
+        </div>
+        <div class="flex gap-3 mt-5">
+          <button @click="closeGoalModal" class="flex-1 rounded-xl py-3 text-sm font-semibold" style="background:var(--surface-3); color:var(--muted);">Cancel</button>
+          <button @click="saveGoal" class="flex-1 btn-primary rounded-xl py-3 text-sm font-semibold">Save</button>
+        </div>
+      </div>
+      </transition>
+    </div>
+    </transition>
+
+    <!-- IDENTITY MODAL -->
+    <transition name="modal">
+    <div v-if="identityModal.open" class="fixed inset-0 z-50 flex items-end" style="background:rgba(0,0,0,.6);" @click.self="closeIdentityModal">
+      <transition name="sheet" appear>
+      <div class="w-full max-w-md mx-auto card rounded-b-none p-5 safe-bottom" style="border-bottom:none;">
+        <div class="w-10 h-1 rounded-full mx-auto mb-4" style="background:var(--surface-3);"></div>
+        <h2 class="font-display text-lg font-semibold mb-4">{{ identityModal.editing ? 'Edit Identity' : 'New Identity' }}</h2>
+        <div class="space-y-3">
+          <input v-model="identityModal.name" placeholder="e.g. Developer, Athlete" class="w-full rounded-xl p-3 text-sm">
+          <select v-model="identityModal.kind" class="w-full rounded-xl p-3 text-sm">
+            <option value="current">Current identity</option><option value="desired">Desired identity</option>
+          </select>
+          <textarea v-model="identityModal.why" rows="3" placeholder="Why does this identity matter to you?" class="w-full rounded-xl p-3 text-sm"></textarea>
+        </div>
+        <div class="flex gap-3 mt-5">
+          <button @click="closeIdentityModal" class="flex-1 rounded-xl py-3 text-sm font-semibold" style="background:var(--surface-3); color:var(--muted);">Cancel</button>
+          <button @click="saveIdentity" class="flex-1 btn-primary rounded-xl py-3 text-sm font-semibold">Save</button>
+        </div>
+      </div>
+      </transition>
+    </div>
+    </transition>
+
+  </div>
+  `
+};
+
+createApp(App).mount('#app');
+</script>
+</body>
+</html>
